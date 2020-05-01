@@ -1,0 +1,1 @@
+echo -e "\n" | gcloud container clusters resize gpu-cluster-1 --node-pool gpu-pool-2 --num-nodes 0

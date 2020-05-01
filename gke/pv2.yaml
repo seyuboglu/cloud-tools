@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-2 # Change this to what you want to name the persistent volume in Kubernetes
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 500G # Change this to the size of the persistent disk
+  accessModes:
+    - ReadOnlyMany #ReadWriteOnce
+  gcePersistentDisk:
+    pdName: pd-2 # Change this to what the persistent disk is called in GCP
+    fsType: ext4
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-2 # Change this to what you want to name the persistent volume claim in Kubernetes
+spec:
+  # It's necessary to specify "" as the storageClassName
+  # so that the default storage class won't be used, see
+  # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#class-1
+  storageClassName: ""
+  volumeName: pv-2 # Change this what the persistent volume is called in Kubernetes
+  accessModes:
+    - ReadOnlyMany #ReadWriteOnce
+  resources:
+    requests:
+      storage: 500G # Change this to the size of the persistent disk

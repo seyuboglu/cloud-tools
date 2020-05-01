@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-karan
+spec:
+  template:
+    spec:
+      containers:
+        - command:
+            - sleep 
+            - "60"
+          image: gcr.io/data-aug/img_tf2_torch
+          name: job-karan
+          resources:
+            limits:
+              # cpu: 0.5
+              # memory: 16G
+              nvidia.com/gpu: 1
+            requests:
+              # cpu: 0.5
+              # memory: 16G
+              nvidia.com/gpu: 1
+          volumeMounts:
+            - name: pv-1
+              mountPath: /home
+            - name: pv-2
+              mountPath: /data
+            - name: dshm
+              mountPath: /dev/shm
+      volumes:
+        - name: pv-1
+          persistentVolumeClaim:
+            claimName: pvc-1
+        - name: pv-2
+          persistentVolumeClaim:
+            claimName: pvc-2
+            readOnly: true
+        - name: dshm
+          emptyDir:
+            medium: Memory
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-p100 # or nvidia-tesla-p100 or nvidia-tesla-p4 or nvidia-tesla-v100 or nvidia-tesla-t4
+#        cloud.google.com/gke-nodepool: gpu-pool-3
+      tolerations:
+        - key: "gpu_num"
+          operator: "Equal"
+          value: "1"
+          effect: "NoSchedule"
