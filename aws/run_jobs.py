@@ -7,7 +7,7 @@ import tqdm
 import yaml
 from quinine import *
 
-from .startup import startup_commands
+from .startup import job_startup_commands
 
 GPUS = {'v100': 'nvidia-tesla-v100', 'p100': 'nvidia-tesla-p100', 't4': 'nvidia-tesla-t4'}
 
@@ -26,7 +26,7 @@ def create_job_config(job_key, job_id, root_path, module_to_run, config_path, st
 
     # Add in the startup commands
     base_config['spec']['template']['spec']['containers'][0]['command'] = ['/bin/sh', '-c']
-    startup_cmds = startup_commands(root_path, module_to_run, config_path, use_gdb)
+    startup_cmds = job_startup_commands(root_path, module_to_run, config_path, use_gdb)
     base_config['spec']['template']['spec']['containers'][0]['args'] = [' && '.join(startup_cmds)]
 
     # Modify the GPU
