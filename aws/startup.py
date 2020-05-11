@@ -9,15 +9,38 @@ def install_commands():
         # pip
         'pip install git+https://github.com/krandiash/quinine.git',
         'pip install --upgrade git+https://github.com/tensorpack/dataflow.git',
-        'pip install tensorflow-datasets toposort',
+        'pip install transformers tensorflow-datasets toposort jupyterlab',
+        'pip install python-language-server[all]',
+        'pip install jupyter-lsp',
+        'pip install umap-learn',
+        'pip install pandas matplotlib datashader bokeh holoviews colorcet nltk',
+        'pip install fastBPE regex requests sacremoses subword_nmt',
         'pip install git+https://github.com/PetrochukM/PyTorch-NLP.git',
-        'pip install transformers',
-        'pip install --upgrade wandb gin-config cytoolz funcy munch cerberus pytorch-ignite',
+        'pip install git+https://github.com/makcedward/nlpaug.git numpy matplotlib python-dotenv',
+        'pip install --upgrade wandb gin-config cytoolz funcy munch cerberus pytorch-ignite Cython',
         'pip install --upgrade git+https://github.com/aleju/imgaug.git',
         # 'pip install -U git+https://github.com/albu/albumentations',
 
         # apt-get
         'apt-get -y install libxext6 libx11-6 libxrender1 libxtst6 libxi6 libglib2.0-0',
+
+        # nodejs
+        'wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash',
+        'export NVM_DIR="$HOME/.nvm" ',
+        '\. "$NVM_DIR/nvm.sh" ',
+        # 'exec bash',
+        'nvm install 12.16.3',  # upgrade this version when required
+        'nvm use 12.16.3',
+
+        # conda
+        'conda install -c conda-forge nodejs',
+
+        # jupyter
+        'jupyter labextension install @jupyter-widgets/jupyterlab-manager',
+        'jupyter labextension install @jupyterlab/latex',
+        'jupyter labextension install @jupyterlab/toc',
+        'jupyter labextension install @krassowski/jupyterlab-lsp',
+
     ]
 
 
@@ -88,5 +111,5 @@ def pod_startup_commands():
 
     If editing this function, the only command that's necessary is "sleep infinity".
     """
-    return git_commands(pull=False) + install_commands() + wandb_commands() + ['sleep infinity']
-
+    return git_commands(pull=False) + install_commands() + wandb_commands() + \
+           ['groupadd --gid 2000 foobargroup'] + ['sleep infinity']

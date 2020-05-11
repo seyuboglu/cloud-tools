@@ -32,7 +32,7 @@ spec:
       emptyDir:
         medium: Memory
   restartPolicy: Never
-   nodeSelector:
+  nodeSelector:
      # Make sure that your cluster actually has the accelerator you're requesting!
-#     kops.k8s.io/instancegroup: nodes # or whatever the name is
-     k8s.amazonaws.com/accelerator: nvidia-tesla-t4 # or nvidia-tesla-p100 or nvidia-tesla-p4 or nvidia-tesla-v100 or nvidia-tesla-t4
+    kops.k8s.io/instancegroup: nodes # or whatever the name is
+    # k8s.amazonaws.com/accelerator: nvidia-tesla-t4 # or nvidia-tesla-p100 or nvidia-tesla-p4 or nvidia-tesla-v100 or nvidia-tesla-t4
