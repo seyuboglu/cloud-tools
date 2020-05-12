@@ -9,7 +9,7 @@ def install_commands():
         # pip
         'pip install git+https://github.com/krandiash/quinine.git',
         'pip install --upgrade git+https://github.com/tensorpack/dataflow.git',
-        'pip install transformers tensorflow-datasets toposort jupyterlab',
+        'pip install transformers tensorflow-datasets toposort jupyterlab torchtext spacy tensorflow_addons',
         'pip install python-language-server[all]',
         'pip install jupyter-lsp',
         'pip install umap-learn',
