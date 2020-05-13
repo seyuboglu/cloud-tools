@@ -1,11 +1,10 @@
-def install_commands():
+def install_commands(jupyter=True):
     """
     Commands to install any extra dependencies that are missing in the Docker image.
     Typical when you have a large project and don't want to keep changing your Docker image for a few
     extra dependencies.
     """
-    # insert pip install or apt-get commands here if any
-    return [
+    cmds = [
         # pip
         'pip install git+https://github.com/krandiash/quinine.git',
         'pip install --upgrade git+https://github.com/tensorpack/dataflow.git',
@@ -24,24 +23,31 @@ def install_commands():
         # apt-get
         'apt-get -y install libxext6 libx11-6 libxrender1 libxtst6 libxi6 libglib2.0-0',
 
-        # nodejs
-        'wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash',
-        'export NVM_DIR="$HOME/.nvm" ',
-        '\. "$NVM_DIR/nvm.sh" ',
-        # 'exec bash',
-        'nvm install 12.16.3',  # upgrade this version when required
-        'nvm use 12.16.3',
-
         # conda
-        'conda install -c conda-forge nodejs',
-
-        # jupyter
-        'jupyter labextension install @jupyter-widgets/jupyterlab-manager',
-        'jupyter labextension install @jupyterlab/latex',
-        'jupyter labextension install @jupyterlab/toc',
-        'jupyter labextension install @krassowski/jupyterlab-lsp',
-
+        # ...
     ]
+
+    if jupyter:
+        cmds += [
+            # nodejs
+            'wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash',
+            'export NVM_DIR="$HOME/.nvm" ',
+            '\. "$NVM_DIR/nvm.sh" ',
+            # 'exec bash',
+            'nvm install 12.16.3',  # upgrade this version when required
+            'nvm use 12.16.3',
+
+            # conda
+            'conda install -c conda-forge nodejs',
+
+            # jupyter
+            'jupyter labextension install @jupyter-widgets/jupyterlab-manager',
+            'jupyter labextension install @jupyterlab/latex',
+            'jupyter labextension install @jupyterlab/toc',
+            'jupyter labextension install @krassowski/jupyterlab-lsp',
+
+        ]
+    return cmds
 
 
 def git_commands(pull):
@@ -92,7 +98,7 @@ def job_startup_commands(root_path, module_to_run, config_path, use_gdb):
 
     If editing this function, your last command should be the script that you want to run.
     """
-    cmds = [f'cd {root_path}'] + git_commands(pull=True) + install_commands() + wandb_commands()
+    cmds = [f'cd {root_path}'] + git_commands(pull=True) + install_commands(jupyter=False) + wandb_commands()
 
     if not use_gdb:
         # run_cmd = f'python {method_to_run}.py --config {config_path}'
