@@ -12,12 +12,16 @@ def install_commands(jupyter=True):
         'pip install python-language-server[all]',
         'pip install jupyter-lsp',
         'pip install umap-learn',
-        'pip install pandas matplotlib datashader bokeh holoviews colorcet nltk',
+        'pip install pandas matplotlib datashader bokeh holoviews colorcet nltk fuzzywuzzy[speedup]',
         'pip install fastBPE regex requests sacremoses subword_nmt',
         'pip install git+https://github.com/PetrochukM/PyTorch-NLP.git',
         'pip install git+https://github.com/makcedward/nlpaug.git numpy matplotlib python-dotenv',
         'pip install --upgrade wandb gin-config cytoolz funcy munch cerberus pytorch-ignite Cython',
         'pip install --upgrade git+https://github.com/aleju/imgaug.git',
+        'pip install pyahocorasick fuzzywuzzy allennlp allennlp_models streamlit pgmpy',
+        'python -m spacy download en_core_web_sm',
+        'pip install -e /home/workspace/playground/flyingsquid/',
+        'pip install -e /home/workspace/playground/epoxy/',
         # 'pip install -U git+https://github.com/albu/albumentations',
 
         # apt-get
@@ -41,10 +45,10 @@ def install_commands(jupyter=True):
             'conda install -c conda-forge nodejs',
 
             # jupyter
-            'jupyter labextension install @jupyter-widgets/jupyterlab-manager',
-            'jupyter labextension install @jupyterlab/latex',
-            'jupyter labextension install @jupyterlab/toc',
-            'jupyter labextension install @krassowski/jupyterlab-lsp',
+            # 'jupyter labextension install @jupyter-widgets/jupyterlab-manager',
+            # 'jupyter labextension install @jupyterlab/latex',
+            # 'jupyter labextension install @jupyterlab/toc',
+            # 'jupyter labextension install @krassowski/jupyterlab-lsp',
 
         ]
     return cmds
@@ -56,10 +60,12 @@ def git_commands(pull):
     """
     cmds = [
         'mkdir ~/.ssh',
-        'cp /home/.ssh/id_rsa ~/.ssh/',
+        'cp /home/.ssh/* ~/.ssh/',
         'ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts',
-        'git config --global user.email "kgoel93@gmail.com"',
-        'git config --global user.name "krandiash"',
+        # 'eval `ssh-agent -s`'
+        # 'ssh-agent ~/.ssh/impedance_rsa.pub'
+        # 'git config --global user.email "kgoel93@gmail.com"',
+        # 'git config --global user.name "krandiash"',
     ]
     if pull:
         return cmds + ['git pull']
@@ -111,11 +117,15 @@ def job_startup_commands(root_path, module_to_run, config_path, use_gdb):
     return cmds
 
 
-def pod_startup_commands():
+def pod_startup_commands(pure=False):
     """
     Set the git configuration, install all the additional libraries we need and setup Weights and Biases.
 
     If editing this function, the only command that's necessary is "sleep infinity".
     """
+    if pure:
+        return ['sleep infinity']
     return git_commands(pull=False) + install_commands() + wandb_commands() + \
-           ['groupadd --gid 2000 foobargroup'] + ['sleep infinity']
+           ['groupadd --gid 2000 foobargroup',
+            'adduser krandiash',
+            'usermod -aG root krandiash'] + ['sleep infinity']

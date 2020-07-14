@@ -1,0 +1,40 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ssh
+spec:
+  selector:
+    # kops.k8s.io/instancegroup: nodes #
+    app: app
+
+  # Make the service externally visible via the node
+  type: NodePort 
+
+  ports:
+    # Which port on the node is the service available through?
+    - nodePort: 30002
+
+    # Inside the cluster, what port does the service expose?
+      port: 22
+
+    # Which port do pods selected by this service expose?
+      targetPort: 22
+
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#     name: ssh
+# spec:
+#     type: LoadBalancer
+#     ports:
+#         # If there are multiple ports, then each port sub-section needs a name and a protocol (as needed)
+#         -   port: 8002
+#             targetPort: 8002
+#             name: http
+#         -   port: 22
+#             targetPort: 22
+#             name: ssh
+#             protocol: TCP
+#     selector:
+        # app: app

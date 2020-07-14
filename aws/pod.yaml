@@ -24,6 +24,18 @@ spec:
       ports:
         - name: jupyter
           containerPort: 8000
+        - name: streamlit
+          containerPort: 8001
+        - name: app
+          containerPort: 8002
+        - name: app-1
+          containerPort: 8003
+        - name: app-2
+          containerPort: 8004
+        - name: app-3
+          containerPort: 8005
+        - name: app-4
+          containerPort: 8006
   volumes:
     - name: efs-pvc
       persistentVolumeClaim:

@@ -11,7 +11,7 @@ GPUS = {'v100': 'nvidia-tesla-v100',
         't4': 'nvidia-tesla-t4'}
 
 
-def launch_pod(name, gpu, cpu, pool, image):
+def launch_pod(name, namespace, gpu, cpu, pool, image, test=False):
     # Load the base manifest for launching Pods
     config = yaml.load(open('aws/pod.yaml'))
 
@@ -41,7 +41,7 @@ def launch_pod(name, gpu, cpu, pool, image):
 
     # Put in a bunch of startup commands
     config['spec']['containers'][0]['command'] = ['/bin/sh', '-c']
-    config['spec']['containers'][0]['args'] = [' && '.join(pod_startup_commands())]
+    config['spec']['containers'][0]['args'] = [' && '.join(pod_startup_commands(test))]
 
     # Store it
     yaml.dump(config, open('temp.yaml', 'w'))
@@ -52,15 +52,17 @@ def launch_pod(name, gpu, cpu, pool, image):
     print("###################################################################################")
 
     # Launch the Pod
-    subprocess.call('kubectl apply -f temp.yaml', shell=True)
-
+    if not namespace:
+        subprocess.call('kubectl apply -f temp.yaml', shell=True)
+    else:
+        subprocess.call(f'kubectl apply -f temp.yaml --namespace={namespace}', shell=True)
     # Clean up
     os.remove('temp.yaml')
 
 
 def main(args):
     if args.resource == 'pod':
-        launch_pod(args.name, args.gpu, args.cpu, args.pool, args.image)
+        launch_pod(args.name, args.namespace, args.gpu, args.cpu, args.pool, args.image, args.test)
 
 
 if __name__ == '__main__':
@@ -70,6 +72,8 @@ if __name__ == '__main__':
     parser.add_argument('--cpu', '-c', type=int, default=None)
     parser.add_argument('--pool', '-p', type=str, default=None)
     parser.add_argument('--name', '-n', type=str, required=True)
+    parser.add_argument('--namespace', '-ns', type=str, default=None)
+    parser.add_argument('--test', '-t', action='store_true', default=False)
     parser.add_argument('--image', '-im', type=str,
                         default='291343978134.dkr.ecr.us-west-2.amazonaws.com/aws-tf2-torch:latest')
 
