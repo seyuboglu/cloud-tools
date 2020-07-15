@@ -19,7 +19,7 @@ def install_commands(jupyter=True):
         'pip install --upgrade wandb gin-config cytoolz funcy munch cerberus pytorch-ignite Cython',
         'pip install --upgrade git+https://github.com/aleju/imgaug.git',
         'pip install pyahocorasick fuzzywuzzy allennlp allennlp_models streamlit pgmpy',
-        'pip install ray Bayesian-Optimization',
+        'pip install ray Bayesian-Optimization faiss-gpu',
         'python -m spacy download en_core_web_sm',
         'pip install -e /home/workspace/playground/flyingsquid/',
         'pip install -e /home/workspace/playground/epoxy/',
