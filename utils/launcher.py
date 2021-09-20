@@ -5,24 +5,7 @@ import subprocess
 import yaml
 import datetime
 from argparse import ArgumentParser
-
-
-# Default Docker image to use for the Pods
-DEFAULT_IMAGE = 'gcr.io/hai-gcp-hippo/torch18-cu111'
-# Path to conda profile.d/conda.sh file
-CONDA_ACTIVATION_PATH = '/home/miniconda3/etc/profile.d/conda.sh'
-# Path to bash rc file
-BASH_RC_PATH = '/home/workspace/.bashrc'
-# Default conda environment on the cluster
-DEFAULT_CONDA_ENV = 'hippo'
-# Default startup directory on the cluster
-DEFAULT_STARTUP_DIR = '/home/workspace/projects/'
-# The base manifest for launching Pods
-BASE_POD_YAML_PATH = 'pod.yaml'
-# List of node pools that can be used on the cluster
-NODE_POOLS = ['t4-1', 't4-4', 'p100-1', 'p100-4', 'v100-1', 'v100-8']
-# Directory where logs for launched Pods will be stored
-JOBLOG_DIR = './joblogs'
+from constants import DEFAULTS
 
 
 def get_timestamp():
@@ -31,24 +14,6 @@ def get_timestamp():
     ts_str = f"{ts:%Y-%m-%d-%H-%M-%S}"[2:]
     return ts_str
 
-def main_command(run_name, args, dryrun=False):
-    """
-    Return the main command to be run on the cluster.
-
-    Args:
-        run_name (str): The name of the run.
-        args (dict): The arguments to be passed to the main command.
-        dryrun (bool): Whether to run the command in dryrun mode.
-
-    Returns:
-        str: The main command to be run on the cluster.
-    """
-    all_args = ' '.join(args)
-    if dryrun:
-        cmd = f"python -m train runner=pl {all_args} wandb.group={run_name} runner.wandb=False\n"
-    else:
-        cmd = f"python -m train runner=pl runner.wandb=True wandb.group={run_name} {all_args}\n"
-    return cmd
 
 
 def cmdruns(timestamp, run_name, sweep_fn, dryrun=False):
@@ -63,7 +28,7 @@ def cmdruns(timestamp, run_name, sweep_fn, dryrun=False):
 
     # Print to file
     cmds = {}
-    filename = f'{JOBLOG_DIR}/{timestamp}.sh'
+    filename = f'{DEFAULT.JOBLOG_DIR}/{timestamp}.sh'
     try:
         with open(filename, 'w') as cmdfile:
             cmdfile.write('#!/usr/bin/env bash\n\n')
@@ -72,7 +37,7 @@ def cmdruns(timestamp, run_name, sweep_fn, dryrun=False):
             cmdfile.write(f'# {len(runs)} configurations\n\n')
             print(f'{len(runs)} configurations')
             for i, args in enumerate(runs):
-                cmd = main_command(run_name, args, dryrun)
+                cmd = DEFAULT.main_command(run_name, args, dryrun)
                 cmds[f'{i+1}-{run_name}'] = cmd
                 cmdfile.write(cmd + '\n')
 
@@ -85,7 +50,7 @@ def cmdruns(timestamp, run_name, sweep_fn, dryrun=False):
 
     return filename, cmds
 
-def pool_dependent_conda_env(pool, conda_env=DEFAULT_CONDA_ENV):
+def pool_dependent_conda_env(pool, conda_env):
     """
     Return the conda environment to use for the given node pool.
 
@@ -114,8 +79,8 @@ def commands(pool, cmd, startup_dir, conda_env):
     # (e.g. if need to use different setups for different GPUs)
     conda_env = pool_dependent_conda_env(pool) 
     return [
-        f'source {BASH_RC_PATH}',
-        f'source {CONDA_ACTIVATION_PATH}',
+        f'source {DEFAULT.BASH_RC_PATH}',
+        f'source {DEFAULT.CONDA_ACTIVATION_PATH}',
         f'conda activate {conda_env}',
         f'cd {startup_dir}',
         # 'bash /home/.wandb/auth',
@@ -128,7 +93,7 @@ def commands(pool, cmd, startup_dir, conda_env):
 
 def launch_pod(run_name, pool, image, cmd, startup_dir):
     # Load the base manifest for launching Pods
-    config = yaml.load(open(BASE_POD_YAML_PATH), Loader=yaml.FullLoader)
+    config = yaml.load(open(DEFAULT.BASE_POD_YAML_PATH), Loader=yaml.FullLoader)
 
     # Wipe out the GPU node selector
     config['spec']['nodeSelector'] = {}
@@ -203,6 +168,11 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     parser.add_argument(
+        '--project',
+        help='Project for which to use this script.',
+        required=True,
+    )
+    parser.add_argument(
         '--config', '-c',
         help='Name of the config file with dotted notation.',
         default=None,
@@ -214,7 +184,6 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--pool', '-p',
-        choices=NODE_POOLS,
         required=True,
         help='Node pool where the sweep should be run. '
              'Ensure that the run uses up all the GPUs on the node.',
@@ -224,7 +193,6 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--startup_dir', '-sd',
-        default=DEFAULT_STARTUP_DIR,
         help='Startup directory for the pod.',
     )
     parser.add_argument(
@@ -239,18 +207,20 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--image',
-        default=DEFAULT_IMAGE,
         help='Image to use for the pod.'
     )
     parser.add_argument(
         '--conda',
-        default=DEFAULT_CONDA_ENV,
         help='The conda environment to use.'
     )
     args = parser.parse_args()
 
+    # Inject defaults into program globals()
+    global DEFAULT 
+    DEFAULT = DEFAULTS[args.project]
+
     # Make JOBLOG_DIR if it doesn't exist
-    if not os.path.exists(JOBLOG_DIR):
-        os.makedirs(JOBLOG_DIR, exist_ok=True)
+    if not os.path.exists(DEFAULT.JOBLOG_DIR):
+        os.makedirs(DEFAULT.JOBLOG_DIR, exist_ok=True)
 
     run(args)
