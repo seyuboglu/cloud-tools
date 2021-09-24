@@ -67,6 +67,38 @@ class UnagiGCPFineGrained(Options):
         cmd = f"unagi {' '.join(args)}"
         return cmd
 
+
+@dataclass
+class HippoGCPHippo(Options):
+    DEFAULT_IMAGE = 'gcr.io/hai-gcp-hippo/torch18-cu111'
+    CONDA_ACTIVATION_PATH = '/home/miniconda3/etc/profile.d/conda.sh'
+    BASH_RC_PATH = '/home/workspace/.bashrc'
+    DEFAULT_CONDA_ENV = 'hippo'
+    DEFAULT_STARTUP_DIR = '/home/workspace/hippo/'
+    BASE_POD_YAML_PATH = 'pod-unagi-gcp-fine-grained.yaml'
+    NODE_POOLS = ['t4-1', 't4-4', 'p100-1', 'p100-4', 'v100-1', 'v100-8']
+    JOBLOG_DIR = './joblogs'
+
+    @staticmethod
+    def main_command(run_name, args, dryrun=False):
+        """
+        Return the main command to be run on the cluster.
+
+        Args:
+            run_name (str): The name of the run.
+            args (dict): The arguments to be passed to the main command.
+            dryrun (bool): Whether to run the command in dryrun mode.
+
+        Returns:
+            str: The main command to be run on the cluster.
+        """
+        if dryrun:
+            cmd = f"python -m train wandb=null {' '.join(args)}"
+        else:
+            cmd = f"python -m train wandb.group={run_name} {' '.join(args)}"
+        return cmd
+
 DEFAULTS = {
     'unagi-gcp-fg': UnagiGCPFineGrained(),
+    'hippo-gcp-hippo': HippoGCPHippo(),
 }
