@@ -5,7 +5,7 @@ import subprocess
 import yaml
 import datetime
 from argparse import ArgumentParser
-from constants import DEFAULTS
+from utils.constants import DEFAULTS
 
 
 def get_timestamp():
@@ -29,24 +29,27 @@ def cmdruns(timestamp, run_name, sweep_fn, dryrun=False):
     # Print to file
     cmds = {}
     filename = f'{DEFAULT.JOBLOG_DIR}/{timestamp}.sh'
-    try:
-        with open(filename, 'w') as cmdfile:
-            cmdfile.write('#!/usr/bin/env bash\n\n')
-            cmdfile.write(f'# {timestamp}\n')
-            cmdfile.write(f'# {commit_id}\n\n')
-            cmdfile.write(f'# {len(runs)} configurations\n\n')
-            print(f'{len(runs)} configurations')
-            for i, args in enumerate(runs):
-                cmd = DEFAULT.main_command(run_name, args, dryrun)
-                cmds[f'{i+1}-{run_name}'] = cmd
-                cmdfile.write(cmd + '\n')
+    # try:
+    with open(filename, 'w') as cmdfile:
+        cmdfile.write('#!/usr/bin/env bash\n\n')
+        cmdfile.write(f'# {timestamp}\n')
+        cmdfile.write(f'# {commit_id}\n\n')
+        cmdfile.write(f'# {len(runs)} configurations\n\n')
+        print(f'{len(runs)} configurations')
+        for i, args in enumerate(runs):
+            print(args)
+            cmd = DEFAULT.main_command(run_name, args, dryrun)
+            cmds[f'{i+1}-{run_name}'] = cmd
+            cmdfile.write(cmd + '\n')
 
-            source = inspect.getsource(sweep_fn)
-            commented_source = source.replace('\n', '\n# ')
-            commented_source = '\n# ' + commented_source
-            cmdfile.write(commented_source)
-    except:
-        subprocess.run(['rm', filename])
+        source = inspect.getsource(sweep_fn)
+        commented_source = source.replace('\n', '\n# ')
+        commented_source = '\n# ' + commented_source
+        cmdfile.write(commented_source)
+    # except:
+    #     subprocess.run(['rm', filename])
+
+    print(f"Wrote {filename}")
 
     return filename, cmds
 
@@ -77,7 +80,7 @@ def commands(pool, cmd, startup_dir, conda_env):
     """
     # Optionally, use pool information to set the conda env 
     # (e.g. if need to use different setups for different GPUs)
-    conda_env = pool_dependent_conda_env(pool) 
+    conda_env = pool_dependent_conda_env(pool, conda_env)
     return [
         f'source {DEFAULT.BASH_RC_PATH}',
         f'source {DEFAULT.CONDA_ACTIVATION_PATH}',
@@ -91,7 +94,7 @@ def commands(pool, cmd, startup_dir, conda_env):
     ]
 
 
-def launch_pod(run_name, pool, image, cmd, startup_dir):
+def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env):
     # Load the base manifest for launching Pods
     config = yaml.load(open(DEFAULT.BASE_POD_YAML_PATH), Loader=yaml.FullLoader)
 
@@ -100,10 +103,11 @@ def launch_pod(run_name, pool, image, cmd, startup_dir):
     # Specify the pool
     config['spec']['nodeSelector']['cloud.google.com/gke-nodepool'] = f'{pool}'
     # Request GPUs
-    # config['spec']['containers'][0]['resources'] = {
-    #     'limits': {'nvidia.com/gpu': pool.split("-")[-1]},
-    #     'requests': {'nvidia.com/gpu': pool.split("-")[-1]}
-    # }
+    # TODO(karan): figure out how to parse GPU requests from pool name or add option in cmdline
+    config['spec']['containers'][0]['resources'] = {
+        'limits': {'nvidia.com/gpu': pool.split("-")[-1]},
+        'requests': {'nvidia.com/gpu': pool.split("-")[-1]}
+    }
 
     # Set the name of the Pod
     config['metadata']['name'] = config['spec']['containers'][0]['name'] = run_name
@@ -112,7 +116,7 @@ def launch_pod(run_name, pool, image, cmd, startup_dir):
 
     # Put in a bunch of startup commands
     config['spec']['containers'][0]['command'] = ['bash', '-c']
-    config['spec']['containers'][0]['args'] = [' && '.join(commands(pool, cmd, startup_dir))]
+    config['spec']['containers'][0]['args'] = [' && '.join(commands(pool, cmd, startup_dir, conda_env))]
 
     # Store it
     yaml.dump(config, open('temp.yaml', 'w'))
@@ -142,7 +146,7 @@ def run(args):
         f, cmds = cmdruns(timestamp, run_name, sweep_fn, args.dryrun)
     else:
         # Directly run a command passed in
-        run_name = f'{timestamp}'
+        run_name = f'{timestamp}' if args.interactive is None else args.interactive
         f, cmds = None, {run_name: args.cmd}
 
     print("Timestamp:", timestamp)
@@ -156,9 +160,16 @@ def run(args):
             print(f"Command: {args.cmd}")
     else:
         # Run using Kubernetes
-        print(f"Launching pods...\nPool: {args.pool}\nImage: {args.image}")
+        print(f"Launching pods...\nPool: {args.pool}\nImage: {DEFAULT.DEFAULT_IMAGE}")
         for run_name, cmd in cmds.items():
-            launch_pod(run_name.replace(".", "-").replace("_", "-")[:60], args.pool, args.image, cmd, args.startup_dir)
+            launch_pod(
+                run_name.replace(".", "-").replace("_", "-")[:60], 
+                args.pool, 
+                DEFAULT.DEFAULT_IMAGE, 
+                cmd, 
+                DEFAULT.DEFAULT_STARTUP_DIR, 
+                DEFAULT.DEFAULT_CONDA_ENV,
+            )
 
         if f is not None:
             subprocess.run(['chmod', '777', f])
@@ -171,6 +182,7 @@ if __name__ == '__main__':
         '--project',
         help='Project for which to use this script.',
         required=True,
+        choices=list(DEFAULTS.keys()),
     )
     parser.add_argument(
         '--config', '-c',
@@ -190,6 +202,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--cmd',
+        help="Manually specify command to run on the pod.",
     )
     parser.add_argument(
         '--startup_dir', '-sd',
@@ -207,11 +220,16 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--image',
-        help='Image to use for the pod.'
+        help='Image to use for the pod. Defaults to the image specified by the cluster defaults.'
     )
     parser.add_argument(
         '--conda',
-        help='The conda environment to use.'
+        help='The conda environment to use. Defaults to the conda env specified by the cluster defaults.'
+    )
+    # interactive arg
+    parser.add_argument(
+        '--interactive', '-i',
+        help="Creates an interactive pod with the specified name. `config`, `sweep` and `cmd` are ignored.",
     )
     args = parser.parse_args()
 
@@ -222,5 +240,22 @@ if __name__ == '__main__':
     # Make JOBLOG_DIR if it doesn't exist
     if not os.path.exists(DEFAULT.JOBLOG_DIR):
         os.makedirs(DEFAULT.JOBLOG_DIR, exist_ok=True)
+
+    # Change startup directory if specified
+    if args.startup_dir:
+        DEFAULT.DEFAULT_STARTUP_DIR = args.startup_dir
+
+    # Change conda env if specified
+    if args.conda:
+        DEFAULT.DEFAULT_CONDA_ENV = args.conda
+
+    # Change image if specified
+    if args.image:
+        DEFAULT.DEFAULT_IMAGE = args.image
+
+    if args.interactive:
+        args.cmd = 'sleep infinity'
+        args.config = None
+        args.sweep = None
 
     run(args)
