@@ -47,7 +47,7 @@ class UnagiGCPFineGrained(Options):
     BASH_RC_PATH = '/home/workspace/.bashrc'
     DEFAULT_CONDA_ENV = 'unagi'
     DEFAULT_STARTUP_DIR = '/home/workspace/projects/unagi/'
-    BASE_POD_YAML_PATH = 'pod-unagi-gcp-fine-grained.yaml'
+    BASE_POD_YAML_PATH = 'utils/pod-unagi-gcp-fine-grained.yaml'
     NODE_POOLS = ['t4-1', 't4-2', 't4-4', 'train-t4-1', 'v100-1-small']
     JOBLOG_DIR = './joblogs'
 
@@ -72,10 +72,10 @@ class UnagiGCPFineGrained(Options):
 class HippoGCPHippo(Options):
     DEFAULT_IMAGE = 'gcr.io/hai-gcp-hippo/torch18-cu111'
     CONDA_ACTIVATION_PATH = '/home/miniconda3/etc/profile.d/conda.sh'
-    BASH_RC_PATH = '/home/workspace/.bashrc'
+    BASH_RC_PATH = '/home/.bashrc'
     DEFAULT_CONDA_ENV = 'hippo'
     DEFAULT_STARTUP_DIR = '/home/workspace/hippo/'
-    BASE_POD_YAML_PATH = 'pod-unagi-gcp-fine-grained.yaml'
+    BASE_POD_YAML_PATH = 'utils/pod-unagi-gcp-fine-grained.yaml'
     NODE_POOLS = ['t4-1', 't4-4', 'p100-1', 'p100-4', 'v100-1', 'v100-8']
     JOBLOG_DIR = './joblogs'
 
