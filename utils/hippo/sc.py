@@ -153,7 +153,7 @@ def sc_mfcc_sweep():
         flag("loader.batch_size", [100]),
         flag("trainer.max_epochs", [50]),
         flag("optimizer.lr", [0.01, 4e-3]),
-        flag("scheduler.patience", [5]),
+        flag("+scheduler.patience", [5]),
     ])
 
     return sweep
@@ -164,13 +164,12 @@ def exprnn_mfcc_sweep():
         flag("train.seed", [0]),
         flag("pipeline", ['sc-mfcc']),
         flag("model", ['exprnn']),
-        flag("model.dropout", [0.]),
         flag("model.n_layers", [1]),
         flag("model.layer.cell.d_model", [256, 512]),
-        flag("model.residual", ['N']),
+        flag("model.residual", ['none']),
         flag("decoder.mode", ['last']),
         flag("loader.batch_size", [100]),
-        flag("trainer.max_epochs", [50]),
+        flag("trainer.max_epochs", [200]),
         flag("optimizer.lr", [0.001, 0.002, 0.0005]),
     ])
 
@@ -185,7 +184,7 @@ def lipschitzrnn_mfcc_sweep():
         flag("model.d_model", [256, 512]),
         flag("decoder.mode", ['last']),
         flag("loader.batch_size", [100]),
-        flag("trainer.max_epochs", [50]),
+        flag("trainer.max_epochs", [150]),
         flag("optimizer.lr", [0.001, 0.002, 0.0005]),
     ])
 
@@ -198,11 +197,16 @@ def transformer_mfcc_sweep():
         flag("pipeline", ['sc-mfcc']),
         flag("model", ['transformer']),
         flag("model.dropout", [0., 0.1]),
+        flag("model.layer.0.n_heads", [8]),
+        flag("model.d_model", [128]),
+        flag("model.layer.0.causal", [False]),
         flag("model.n_layers", [2, 4]),
-        flag("decoder.mode", ['last']),
-        flag("loader.batch_size", [16]),
-        flag("trainer.max_epochs", [50]),
-        flag("optimizer.lr", [0.001]),
+        flag("decoder.mode", ['pool']),
+        flag("model.prenorm", [True]),
+        flag("optimizer.lr", [0.001, 0.0005]),
+        flag("trainer.max_epochs", [150]),
+        flag("loader.batch_size", [100]),
+        flag("model.encoder.dropout", ['\'${model.dropout}\'']),
     ])
 
     return sweep
@@ -213,13 +217,18 @@ def performer_mfcc_sweep():
         flag("train.seed", [0]),
         flag("pipeline", ['sc-mfcc']),
         flag("model", ['transformer']),
-        flag("model.layer", ['performer']),
+        flag("+model/layer", ['performer']),
         flag("model.dropout", [0., 0.1]),
+        flag("model.layer.0.n_heads", [8]),
+        flag("model.d_model", [128]),
+        flag("model.layer.0.causal", [False]),
         flag("model.n_layers", [2, 4]),
-        flag("decoder.mode", ['last']),
-        flag("loader.batch_size", [16]),
-        flag("trainer.max_epochs", [50]),
-        flag("optimizer.lr", [0.001]),
+        flag("decoder.mode", ['pool']),
+        flag("model.prenorm", [True]),
+        flag("optimizer.lr", [0.001, 0.0005]),
+        flag("trainer.max_epochs", [150]),
+        flag("loader.batch_size", [100]),
+        flag("model.encoder.dropout", ['\'${model.dropout}\'']),
     ])
 
     return sweep
@@ -231,28 +240,60 @@ def exprnn_sweep():
         flag("train.seed", [0]),
         flag("pipeline", ['sc']),
         flag("model", ['exprnn']),
-        flag("model.dropout", [0., 0.1]),
-        flag("model.n_layers", [2, 4]),
+        flag("model.n_layers", [1]),
+        flag("model.layer.cell.d_model", [256]),
+        flag("model.residual", ['none']),
         flag("decoder.mode", ['last']),
         flag("loader.batch_size", [16]),
-        flag("trainer.max_epochs", [50]),
-        flag("optimizer.lr", [0.001]),
+        flag("trainer.max_epochs", [2]),
+        flag("optimizer.lr", [0.001, 0.0005]),
     ])
 
     return sweep
 
-def lipschitzrnn_sweep():
+def exprnn_sweep_2():
     
     sweep = prod([
         flag("train.seed", [0]),
         flag("pipeline", ['sc']),
+        flag("model", ['exprnn']),
+        flag("model.n_layers", [1]),
+        flag("model.layer.cell.d_model", [32, 64]),
+        flag("model.residual", ['none']),
+        flag("decoder.mode", ['last']),
+        flag("loader.batch_size", [200]),
+        flag("trainer.max_epochs", [50]),
+        flag("optimizer.lr", [0.001, 0.0005]),
+    ])
+
+    return sweep
+
+def lipschitzrnn_sweep(): # LipschitzRNN fails due to speed issues: would take 24hrs to train 1 epoch
+     
+    sweep = prod([
+        flag("train.seed", [0]),
+        flag("pipeline", ['sc']),
         flag("model", ['lipschitzrnn']),
-        flag("model.dropout", [0., 0.1]),
-        flag("model.n_layers", [2, 4]),
+        flag("model.d_model", [256, 512]),
         flag("decoder.mode", ['last']),
         flag("loader.batch_size", [16]),
+        flag("trainer.max_epochs", [150]),
+        flag("optimizer.lr", [0.001, 0.0005]),
+    ])
+
+    return sweep
+
+def lipschitzrnn_sweep_2(): # LipschitzRNN fails due to speed issues: would take 24hrs to train 1 epoch
+     
+    sweep = prod([
+        flag("train.seed", [0]),
+        flag("pipeline", ['sc']),
+        flag("model", ['lipschitzrnn']),
+        flag("model.d_model", [32, 64]),
+        flag("decoder.mode", ['last']),
+        flag("loader.batch_size", [128]),
         flag("trainer.max_epochs", [50]),
-        flag("optimizer.lr", [0.001]),
+        flag("optimizer.lr", [0.001, 0.0005]),
     ])
 
     return sweep

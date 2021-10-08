@@ -131,6 +131,19 @@ def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env):
     os.remove('temp.yaml')
 
 
+def switch_gcp_context(project, zone, cluster):
+    """
+    Switch the GCP context.
+
+    Args:
+        project (str): The GCP project to use.
+        zone (str): The GCP zone to use.
+        cluster (str): The GCP cluster to use.
+    """
+    subprocess.call(f'gcloud config set project {project}', shell=True)
+    subprocess.call(f'gcloud container clusters get-credentials {cluster} --zone {zone}', shell=True)
+
+
 def run(args):
     """Construct the sweep and run it on the cluster."""
 
@@ -257,5 +270,8 @@ if __name__ == '__main__':
         args.cmd = 'sleep infinity'
         args.config = None
         args.sweep = None
+
+    # Change the GCP context
+    switch_gcp_context(DEFAULT.GCP_PROJECT, DEFAULT.GCP_ZONE, DEFAULT.GCP_CLUSTER)
 
     run(args)
