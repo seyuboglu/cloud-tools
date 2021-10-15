@@ -24,6 +24,8 @@ class Options:
     GCP_ZONE = 'us-west1-a'
     # Cluster name
     GCP_CLUSTER = 'platypus-1'
+    # Path to wandb authentication file
+    WANDB_PATH = None
     
 
     @staticmethod
@@ -124,6 +126,7 @@ class HippoGCPFineGrained(Options):
     GCP_PROJECT = 'hai-gcp-fine-grained'
     GCP_ZONE = 'us-west1-a'
     GCP_CLUSTER = 'cluster-1'
+    WANDB_PATH = '/home/workspace/.wandb/auth'
 
     @staticmethod
     def main_command(run_name, args, dryrun=False):

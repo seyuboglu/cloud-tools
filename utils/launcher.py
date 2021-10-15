@@ -86,6 +86,7 @@ def commands(pool, cmd, startup_dir, conda_env):
         f'source {DEFAULT.CONDA_ACTIVATION_PATH}',
         f'conda activate {conda_env}',
         f'cd {startup_dir}',
+        f'bash {DEFAULT.WANDB_PATH}' if DEFAULT.WANDB_PATH else 'sleep 1',
         # 'bash /home/.wandb/auth',
         # 'eval `ssh-agent -s`',
         # 'ssh-add /home/.ssh/id_rsa',
@@ -105,8 +106,8 @@ def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env):
     # Request GPUs
     # TODO(karan): figure out how to parse GPU requests from pool name or add option in cmdline
     config['spec']['containers'][0]['resources'] = {
-        'limits': {'nvidia.com/gpu': pool.split("-")[-1]},
-        'requests': {'nvidia.com/gpu': pool.split("-")[-1]}
+        'limits': {'nvidia.com/gpu': pool.split("-")[1]},
+        'requests': {'nvidia.com/gpu': pool.split("-")[1]}
     }
 
     # Set the name of the Pod
