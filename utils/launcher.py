@@ -16,7 +16,7 @@ def get_timestamp():
 
 
 
-def cmdruns(timestamp, run_name, sweep_fn, dryrun=False):
+def cmdruns(timestamp, run_name, sweep_fn, envvars, dryrun=False):
     # Commit ID
     try:
         commit_id = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip().decode('utf-8')
@@ -39,6 +39,8 @@ def cmdruns(timestamp, run_name, sweep_fn, dryrun=False):
         for i, args in enumerate(runs):
             print(args)
             cmd = DEFAULT.main_command(run_name, args, dryrun)
+            # Prefix the environment variables passed in
+            cmd = " ".join([envvars, cmd])
             cmds[f'{i+1}-{run_name}'] = cmd
             cmdfile.write(cmd + '\n')
 
@@ -157,7 +159,7 @@ def run(args):
         sweep_fn = getattr(config, args.sweep)
         run_name = f'{timestamp}--{args.config}--{args.sweep}'
         # Generate the commands
-        f, cmds = cmdruns(timestamp, run_name, sweep_fn, args.dryrun)
+        f, cmds = cmdruns(timestamp, run_name, sweep_fn, args.envvars, args.dryrun)
     else:
         # Directly run a command passed in
         run_name = f'{timestamp}' if args.interactive is None else args.interactive
@@ -240,10 +242,16 @@ if __name__ == '__main__':
         '--conda',
         help='The conda environment to use. Defaults to the conda env specified by the cluster defaults.'
     )
-    # interactive arg
     parser.add_argument(
         '--interactive', '-i',
         help="Creates an interactive pod with the specified name. `config`, `sweep` and `cmd` are ignored.",
+    )
+    # add an argument to pass in a string for environment variables
+    parser.add_argument(
+        '--envvars',
+        help='Environment variables to set for the command being run e.g. "DATA_PATH=/home/common/datasets/" will be used to prefix the command.',
+        type=str,
+        default='',
     )
     args = parser.parse_args()
 
