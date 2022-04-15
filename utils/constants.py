@@ -150,7 +150,7 @@ class HippoGCPHippoEurope(Options):
         if dryrun:
             cmd = f"python -m train wandb=null {' '.join(args)}"
         else:
-            cmd = f"python -m train wandb.group={run_name} tolerance.id={int(time.time())} {' '.join(args)}"
+            cmd = f"python -m train wandb.group={run_name} tolerance.id={int(time.time()) + abs(int(hash(' '.join(args))))} {' '.join(args)}"
         return cmd
 
 @dataclass
