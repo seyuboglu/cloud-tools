@@ -10,6 +10,17 @@ def mnist_test():
 
     return sweep
 
+def mnist_test_128():
+
+    sweep = prod([
+        flag("dataset", ["mnist"]),
+        flag("model", ["s4"]),
+        flag("model.layer.d_state", [128]),
+        flag("trainer.limit_train_batches", [0.1]),
+    ])
+
+    return sweep
+
 def mnist_transformer():
     # python -m train
 
