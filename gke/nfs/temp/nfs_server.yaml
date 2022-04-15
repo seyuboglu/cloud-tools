@@ -1,0 +1,36 @@
+apiVersion: apps/v1 # extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nfs-server-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: nfs-server-2
+  template:
+    metadata:
+      labels:
+        role: nfs-server-2
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: io-nfs-4
+      containers:
+      - name: nfs-server-2
+        image: gcr.io/google_containers/volume-nfs:0.8
+        ports:
+          - name: nfs
+            containerPort: 2049
+          - name: mountd
+            containerPort: 20048
+          - name: rpcbind
+            containerPort: 111
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /exports
+            name: pd-2
+      volumes:
+        - name: pd-2
+          gcePersistentDisk:
+            pdName: pd-2
+            fsType: ext4

@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-karan
+  labels:
+    app: app
+spec:
+  containers:
+    - command:
+        - sleep
+        - infinity
+      image: gcr.io/hai-gcp-fine-grained/default 
+      name: pod-karan
+      # resources:
+      #   # limits:
+      #   #   nvidia.com/gpu: 1
+      #   requests:
+      #     nvidia.com/gpu: 1
+      volumeMounts:
+        - name: pv-1
+          mountPath: /home
+        - name: dshm
+          mountPath: /dev/shm
+      ports:
+        - name: jupyter
+          containerPort: 8000
+        - name: streamlit
+          containerPort: 8001
+        - name: app
+          containerPort: 8002
+        - name: app-1
+          containerPort: 8003
+        - name: app-2
+          containerPort: 8004
+        - name: app-3
+          containerPort: 8005
+        - name: app-4
+          containerPort: 8006
+  volumes:
+    - name: pv-1
+      persistentVolumeClaim:
+        claimName: pvc-1
+    - name: dshm
+      emptyDir:
+        medium: Memory
+  restartPolicy: Never
+  nodeSelector:
+    # cloud.google.com/gke-accelerator: nvidia-tesla-a100 # nvidia-tesla-k80, nvidia-tesla-p100, nvidia-tesla-p4, nvidia-tesla-v100, nvidia-tesla-t4, or nvidia-tesla-a100
+    cloud.google.com/gke-nodepool: t4-1 #t4-1 #pink-a # godzilla-shark # orangecat
+  tolerations:
+    - key: "nvidia.com/gpu"
+      operator: "Equal"
+      value: "present"
+      effect: "NoSchedule"
