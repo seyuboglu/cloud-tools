@@ -1,4 +1,4 @@
-from utils.config import *
+from ..config import *
 
 def mnist_test():
 

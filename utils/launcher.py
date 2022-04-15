@@ -6,8 +6,11 @@ import subprocess
 import yaml
 import datetime
 from argparse import ArgumentParser
-from utils.constants import DEFAULTS
+from .constants import DEFAULTS
 
+
+from pathlib import Path
+PATH = Path(__file__).parent.parent.absolute() # Path to cloud-tools home
 
 def get_timestamp():
     """Get the current timestamp."""
@@ -102,7 +105,7 @@ def commands(pool, cmd, startup_dir, conda_env):
 
 def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env, as_job=False):
     # Load the base manifest for launching Pods
-    config = yaml.load(open(DEFAULT.BASE_POD_YAML_PATH), Loader=yaml.FullLoader)
+    config = yaml.load(open(PATH / DEFAULT.BASE_POD_YAML_PATH), Loader=yaml.FullLoader)
 
     # Wipe out the GPU node selector
     config['spec']['nodeSelector'] = {}
