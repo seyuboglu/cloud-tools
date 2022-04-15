@@ -1,5 +1,14 @@
 from utils.config import *
 
+def mnist_test():
+
+    sweep = prod([
+        flag("dataset", ["mnist"]),
+        flag("model", ["s4"]),
+        flag("trainer.limit_train_batches", [0.1]),
+    ])
+
+    return sweep
 
 def mnist_transformer():
     # python -m train
@@ -34,6 +43,15 @@ def mnist_performer():
         flag("model.prenorm", [True]),
         flag("optimizer.lr", [0.001, 0.0005]),
         flag("loader.batch_size", [50]),
+    ])
+
+    return sweep
+
+def hdmb_s4_first_sweep():
+
+    sweep = prod([
+        flag("experiment", ['s4-hmdb-something']),
+        flag("trainer.max_epochs", [200]),
     ])
 
     return sweep

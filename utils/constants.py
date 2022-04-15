@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 
 @dataclass
@@ -16,6 +17,8 @@ class Options:
     BASE_POD_YAML_PATH = 'pod.yaml'
     # List of node pools that can be used on the cluster
     NODE_POOLS = ['t4-1', 't4-4', 'p100-1', 'p100-4', 'v100-1', 'v100-8']
+    # List of node pools that are preemptible
+    PREEMPTIBLE_POOLS = []
     # Directory where logs for launched Pods will be stored
     JOBLOG_DIR = './joblogs'
     # GCP project name
@@ -62,6 +65,7 @@ class UnagiGCPFineGrained(Options):
     GCP_PROJECT = 'hai-gcp-fine-grained'
     GCP_ZONE = 'us-west1-a'
     GCP_CLUSTER = 'cluster-1'
+    WANDB_PATH = '/home/workspace/.wandb/auth'
 
     @staticmethod
     def main_command(run_name, args, dryrun=False):
@@ -93,6 +97,7 @@ class HippoGCPHippo(Options):
     GCP_PROJECT = 'hai-gcp-hippo'
     GCP_ZONE = 'us-west1-a'
     GCP_CLUSTER = 'platypus-1'
+    WANDB_PATH = '/home/.wandb/auth'
 
     @staticmethod
     def main_command(run_name, args, dryrun=False):
@@ -114,6 +119,41 @@ class HippoGCPHippo(Options):
         return cmd
 
 @dataclass
+class HippoGCPHippoEurope(Options):
+    DEFAULT_IMAGE = 'gcr.io/hai-gcp-hippo/torch18-cu111'
+    CONDA_ACTIVATION_PATH = '/home/miniconda3/etc/profile.d/conda.sh'
+    BASH_RC_PATH = '/home/.bashrc'
+    DEFAULT_CONDA_ENV = 's4'
+    DEFAULT_STARTUP_DIR = '/home/workspace/hippo/'
+    BASE_POD_YAML_PATH = 'utils/pod-unagi-gcp-fine-grained.yaml'
+    NODE_POOLS = ['a100-1']
+    PREEMPTIBLE_POOLS = ['a100-1']
+    JOBLOG_DIR = './joblogs'
+    GCP_PROJECT = 'hai-gcp-hippo'
+    GCP_ZONE = 'europe-west4-a'
+    GCP_CLUSTER = 'platypus-2'
+    WANDB_PATH = '/home/.wandb/auth'
+
+    @staticmethod
+    def main_command(run_name, args, dryrun=False):
+        """
+        Return the main command to be run on the cluster.
+
+        Args:
+            run_name (str): The name of the run.
+            args (dict): The arguments to be passed to the main command.
+            dryrun (bool): Whether to run the command in dryrun mode.
+
+        Returns:
+            str: The main command to be run on the cluster.
+        """
+        if dryrun:
+            cmd = f"python -m train wandb=null {' '.join(args)}"
+        else:
+            cmd = f"python -m train wandb.group={run_name} tolerance.id={int(time.time())} {' '.join(args)}"
+        return cmd
+
+@dataclass
 class HippoGCPFineGrained(Options):
     DEFAULT_IMAGE = 'gcr.io/hai-gcp-fine-grained/default'
     CONDA_ACTIVATION_PATH = '/home/common/envs/conda/etc/profile.d/conda.sh'
@@ -121,7 +161,7 @@ class HippoGCPFineGrained(Options):
     DEFAULT_CONDA_ENV = 'hippo'
     DEFAULT_STARTUP_DIR = '/home/workspace/projects/hippo/'
     BASE_POD_YAML_PATH = 'utils/pod-unagi-gcp-fine-grained.yaml'
-    NODE_POOLS = ['t4-1', 't4-2', 't4-4', 'train-t4-1', 'v100-1-small']
+    NODE_POOLS = ['t4-1', 't4-2', 't4-4', 'train-t4-1', 'v100-1-small', 'v100-1']
     JOBLOG_DIR = './joblogs'
     GCP_PROJECT = 'hai-gcp-fine-grained'
     GCP_ZONE = 'us-west1-a'
@@ -151,5 +191,6 @@ class HippoGCPFineGrained(Options):
 DEFAULTS = {
     'unagi-gcp-fg': UnagiGCPFineGrained(),
     'hippo-gcp-hippo': HippoGCPHippo(),
+    'hippo-gcp-hippo-europe': HippoGCPHippoEurope(),
     'hippo-gcp-fg': HippoGCPFineGrained(),    
 }

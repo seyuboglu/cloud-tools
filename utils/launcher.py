@@ -1,3 +1,4 @@
+import copy
 import importlib
 import inspect
 import os
@@ -84,10 +85,12 @@ def commands(pool, cmd, startup_dir, conda_env):
     # (e.g. if need to use different setups for different GPUs)
     conda_env = pool_dependent_conda_env(pool, conda_env)
     return [
-        f'source {DEFAULT.BASH_RC_PATH}',
-        f'source {DEFAULT.CONDA_ACTIVATION_PATH}',
-        f'conda activate {conda_env}',
-        f'cd {startup_dir}',
+        'apt-get update -y',
+        'apt-get install -y libsndfile1-dev',
+        f'source {DEFAULT.BASH_RC_PATH}' if DEFAULT.BASH_RC_PATH else 'sleep 1',
+        f'source {DEFAULT.CONDA_ACTIVATION_PATH}' if DEFAULT.CONDA_ACTIVATION_PATH else 'sleep 1',
+        f'conda activate {conda_env}' if conda_env else 'sleep 1',
+        f'cd {startup_dir}' if startup_dir else 'sleep 1',
         f'bash {DEFAULT.WANDB_PATH}' if DEFAULT.WANDB_PATH else 'sleep 1',
         # 'bash /home/.wandb/auth',
         # 'eval `ssh-agent -s`',
@@ -97,7 +100,7 @@ def commands(pool, cmd, startup_dir, conda_env):
     ]
 
 
-def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env):
+def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env, as_job=False):
     # Load the base manifest for launching Pods
     config = yaml.load(open(DEFAULT.BASE_POD_YAML_PATH), Loader=yaml.FullLoader)
 
@@ -121,9 +124,18 @@ def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env):
     config['spec']['containers'][0]['command'] = ['bash', '-c']
     config['spec']['containers'][0]['args'] = [' && '.join(commands(pool, cmd, startup_dir, conda_env))]
 
+    if as_job:
+        config['apiVersion'] = 'batch/v1'
+        config['kind'] = 'Job'
+        spec = copy.copy(config['spec'])
+        config['spec']['template'] = {'spec': spec}
+        for key in list(config['spec'].keys()):
+            if key != 'template':
+                del config['spec'][key]
+
     # Store it
     yaml.dump(config, open('temp.yaml', 'w'))
-
+    
     # Log
     print(f"Run name: {run_name}")
 
@@ -152,6 +164,9 @@ def run(args):
 
     # Timestamp
     timestamp = get_timestamp()
+
+    # Preemptible
+    preemptible = args.pool in DEFAULT.PREEMPTIBLE_POOLS
     
     if args.config and args.sweep:
         # For config and sweep, load the config Python file and the sweep function
@@ -185,6 +200,7 @@ def run(args):
                 cmd, 
                 DEFAULT.DEFAULT_STARTUP_DIR, 
                 DEFAULT.DEFAULT_CONDA_ENV,
+                as_job=preemptible,
             )
 
         if f is not None:
@@ -246,7 +262,6 @@ if __name__ == '__main__':
         '--interactive', '-i',
         help="Creates an interactive pod with the specified name. `config`, `sweep` and `cmd` are ignored.",
     )
-    # add an argument to pass in a string for environment variables
     parser.add_argument(
         '--envvars',
         help='Environment variables to set for the command being run e.g. "DATA_PATH=/home/common/datasets/" will be used to prefix the command.',

@@ -2,10 +2,10 @@ from utils.config import *
 
 def sc_repro():
 
-    sweep = [
+    sweep = prod([
         flag("train.seed", [0]), 
         flag("+experiment", ['s3-sc'])
-    ]
+    ])
     
     return sweep
 

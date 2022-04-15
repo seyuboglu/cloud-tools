@@ -4,11 +4,11 @@ metadata:
   name: pv-1
 spec:
   capacity:
-    storage: 6000Gi
+    storage: 1000Gi
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.85.6.58
+    server: 10.100.5.15
     path: "/"
 
 ---
@@ -22,4 +22,4 @@ spec:
   storageClassName: ""
   resources:
     requests:
-      storage: 6000Gi
+      storage: 1000Gi

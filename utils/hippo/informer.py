@@ -376,4 +376,3 @@ def weather_sweep_S(): # launched
 
     return sweep
 
-
