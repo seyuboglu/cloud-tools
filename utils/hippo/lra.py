@@ -57,3 +57,33 @@ def aan_repro():
     ])
     
     return sweep
+
+## NeurIPS 2022
+
+def pathx_sweep_1():
+
+    sweep = prod([
+        flag("experiment", ['s4-lra-pathx-test']),
+        flag("model.layer.bidirectional", [True, False]),
+        lzip([
+            flag("model.layer.dt_min", [1e-3, 1e-4]),
+            flag("model.layer.dt_max", [1e-1, 1e-2]),
+        ]),
+        flag("model.layer.measure", ['hippo', 'legs']),
+    ])
+
+    return sweep
+
+def aan_sweep_1():
+
+    sweep = prod([
+        flag("experiment", ['s4-lra-pathx-test']),
+        flag("model.layer.bidirectional", [True, False]),
+        lzip([
+            flag("model.layer.dt_min", [1e-3, 1e-4]),
+            flag("model.layer.dt_max", [1e-1, 1e-2]),
+        ]),
+        flag("model.layer.measure", ['hippo', 'legs']),
+    ])
+
+    return sweep
