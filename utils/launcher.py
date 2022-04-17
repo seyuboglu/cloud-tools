@@ -70,6 +70,8 @@ def pool_dependent_conda_env(pool, conda_env):
     Returns:
         str: The conda environment to use for the given node pool.
     """
+    if pool in DEFAULT.CONDA_ENVS:
+        return DEFAULT.CONDA_ENVS[pool]
     return conda_env
 
 def commands(pool, cmd, startup_dir, conda_env):

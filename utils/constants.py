@@ -19,6 +19,8 @@ class Options:
     NODE_POOLS = ['t4-1', 't4-4', 'p100-1', 'p100-4', 'v100-1', 'v100-8']
     # List of node pools that are preemptible
     PREEMPTIBLE_POOLS = []
+    # Conda environments to use for specific node pools (if not default)
+    CONDA_ENVS = {}
     # Directory where logs for launched Pods will be stored
     JOBLOG_DIR = './joblogs'
     # GCP project name
@@ -128,6 +130,7 @@ class HippoGCPHippoEurope(Options):
     BASE_POD_YAML_PATH = 'utils/pod-unagi-gcp-fine-grained.yaml'
     NODE_POOLS = ['a100-1', 'a100-8-west4-a', 't4-1', 't4-1-p']
     PREEMPTIBLE_POOLS = ['a100-1', 'a100-8-west4-a', 't4-1-p']
+    CONDA_ENVS = {'a100-1': 's4-a100'}
     JOBLOG_DIR = './joblogs'
     GCP_PROJECT = 'hai-gcp-hippo'
     GCP_ZONE = 'europe-west4-a'
