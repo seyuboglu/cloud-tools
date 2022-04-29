@@ -204,7 +204,7 @@ def run(args):
         print(f"Launching pods...\nPool: {args.pool}\nImage: {DEFAULT.DEFAULT_IMAGE}")
         for run_name, cmd in cmds.items():
             launch_pod(
-                run_name.replace(".", "-").replace("_", "-")[:60].lower(), 
+                run_name.replace(".", "-").replace("_", "-")[:60].lower().rstrip("-"),
                 args.pool, 
                 DEFAULT.DEFAULT_IMAGE, 
                 cmd, 
