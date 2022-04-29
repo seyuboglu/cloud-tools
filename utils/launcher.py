@@ -90,6 +90,11 @@ def commands(pool, cmd, startup_dir, conda_env):
     # (e.g. if need to use different setups for different GPUs)
     conda_env = pool_dependent_conda_env(pool, conda_env)
     return [
+        'sudo apt-key del 7fa2af80',
+        'wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb',
+        'sudo dpkg -i cuda-keyring_1.0-1_all.deb',
+        'rm /etc/apt/sources.list.d/cuda.list',
+        'curl -sL "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xF60F4B3D7FA2AF80" | sudo apt-key add -',
         'apt-get update -y',
         'apt-get install -y libsndfile1-dev',
         f'source {DEFAULT.BASH_RC_PATH}' if DEFAULT.BASH_RC_PATH else 'sleep 1',
