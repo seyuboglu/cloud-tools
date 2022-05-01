@@ -128,8 +128,8 @@ class HippoGCPHippoEurope(Options):
     DEFAULT_CONDA_ENV = 's4'
     DEFAULT_STARTUP_DIR = '/home/workspace/hippo/'
     BASE_POD_YAML_PATH = 'utils/pod-unagi-gcp-fine-grained.yaml'
-    NODE_POOLS = ['a100-1', 'a100-8-west4-a', 't4-1', 't4-1-p']
-    PREEMPTIBLE_POOLS = ['a100-1', 'a100-8-west4-a', 't4-1-p']
+    NODE_POOLS = ['a100-1', 'a100-8-west4-a', 't4-1', 't4-1-p', 't4-1-highmem']
+    PREEMPTIBLE_POOLS = ['a100-1', 'a100-8-west4-a', 't4-1-p', 't4-1-highmem']
     CONDA_ENVS = {'a100-1': 's4-a100'}
     JOBLOG_DIR = './joblogs'
     GCP_PROJECT = 'hai-gcp-hippo'
