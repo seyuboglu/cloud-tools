@@ -38,7 +38,6 @@ def cmdruns(timestamp, run_name, sweep_fn, envvars, dryrun=False):
         cmdfile.write('#!/usr/bin/env bash\n\n')
         cmdfile.write(f'# {timestamp}\n')
         cmdfile.write(f'# {commit_id}\n\n')
-        cmdfile.write(f'# {len(runs)} configurations\n\n')
         print(f'{len(runs)} configurations')
         for i, args in enumerate(runs):
             print(args)
@@ -52,6 +51,8 @@ def cmdruns(timestamp, run_name, sweep_fn, envvars, dryrun=False):
         commented_source = source.replace('\n', '\n# ')
         commented_source = '\n# ' + commented_source
         cmdfile.write(commented_source)
+
+        cmdfile.write(f'\n# {len(runs)} configurations\n')
     # except:
     #     subprocess.run(['rm', filename])
 
