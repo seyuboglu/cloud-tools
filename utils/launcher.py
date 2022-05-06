@@ -168,9 +168,13 @@ def switch_gcp_context(project, zone, cluster):
     """
     failed = subprocess.call(f'kubectl config use-context {cluster}', shell=True)
     if failed:
+        print("Pulling cluster credentials...")
         subprocess.call(f'gcloud config set project {project}', shell=True)
         subprocess.call(f'gcloud container clusters get-credentials {cluster} --zone {zone}', shell=True)
+        print("Renaming context to {cluster} from gke_{project}_{zone}_{cluster}")
         subprocess.call(f'kubectl config rename-context gke_{project}_{zone}_{cluster} {cluster}', shell=True)
+        
+    print("Switched to {cluster}")
 
 
 def run(args):
