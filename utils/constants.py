@@ -157,6 +157,22 @@ class HippoGCPHippoEurope(Options):
         return cmd
 
 @dataclass
+class HippoGCPHippoCentral(HippoGCPHippo):
+    NODE_POOLS = ['a100-1-p', 't4-1-p']
+    PREEMPTIBLE_POOLS = ['a100-1-p', 't4-1-p']
+    CONDA_ENVS = {'a100-1-p': 's4-a100'}
+    GCP_ZONE = 'us-central1-a'
+    GCP_CLUSTER = 'platypus-3'
+
+@dataclass
+class HippoGCPHippoEurope2(HippoGCPHippoEurope):
+    NODE_POOLS = ['a100-1-p', 't4-1-p']
+    PREEMPTIBLE_POOLS = ['a100-1-p', 't4-1-p']
+    CONDA_ENVS = {'a100-1-p': 's4-a100'}
+    GCP_CLUSTER = 'platypus-4'
+
+
+@dataclass
 class HippoGCPFineGrained(Options):
     DEFAULT_IMAGE = 'gcr.io/hai-gcp-fine-grained/default'
     CONDA_ACTIVATION_PATH = '/home/common/envs/conda/etc/profile.d/conda.sh'
@@ -195,5 +211,11 @@ DEFAULTS = {
     'unagi-gcp-fg': UnagiGCPFineGrained(),
     'hippo-gcp-hippo': HippoGCPHippo(),
     'hippo-gcp-hippo-europe': HippoGCPHippoEurope(),
+    'hippo-gcp-hippo-europe-2': HippoGCPHippoEurope2(),
+    'hippo-gcp-hippo-central': HippoGCPHippoCentral(),
     'hippo-gcp-fg': HippoGCPFineGrained(),    
 }
+
+# gcloud container clusters get-credentials platypus-2 --zone europe-west4-a
+# gcloud container clusters get-credentials platypus-3 --zone us-central1-a
+# gcloud container clusters get-credentials platypus-4 --zone europe-west4-a
