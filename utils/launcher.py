@@ -176,8 +176,13 @@ def run(args):
     # Timestamp
     timestamp = get_timestamp()
 
+    # Check if the pool is supported
+    if args.pool not in DEFAULT.NODE_POOLS:
+        raise ValueError(f"Pool {args.pool} not supported")
+
     # Preemptible
     preemptible = args.pool in DEFAULT.PREEMPTIBLE_POOLS
+
     
     if args.config and args.sweep:
         # For config and sweep, load the config Python file and the sweep function
