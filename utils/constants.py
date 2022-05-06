@@ -158,7 +158,7 @@ class HippoGCPHippoEurope(Options):
 
 @dataclass
 class HippoGCPHippoCentral(HippoGCPHippoEurope):
-    NODE_POOLS = ['a100-1-p', 't4-1-p']
+    NODE_POOLS = ['a100-1-p', 't4-1-p', 't4-1']
     PREEMPTIBLE_POOLS = ['a100-1-p', 't4-1-p']
     CONDA_ENVS = {'a100-1-p': 's4-a100'}
     GCP_ZONE = 'us-central1-a'
@@ -166,7 +166,7 @@ class HippoGCPHippoCentral(HippoGCPHippoEurope):
 
 @dataclass
 class HippoGCPHippoEurope2(HippoGCPHippoEurope):
-    NODE_POOLS = ['a100-1-p', 't4-1-p']
+    NODE_POOLS = ['a100-1-p', 't4-1-p', 't4-1']
     PREEMPTIBLE_POOLS = ['a100-1-p', 't4-1-p']
     CONDA_ENVS = {'a100-1-p': 's4-a100'}
     GCP_CLUSTER = 'platypus-4'
