@@ -13,7 +13,7 @@ spec:
         role: nfs-server
     spec:
       nodeSelector:
-        cloud.google.com/gke-nodepool: default-pool
+        cloud.google.com/gke-nodepool: io-nfs-64
       containers:
       - name: nfs-server
         image: gcr.io/google_containers/volume-nfs:0.8

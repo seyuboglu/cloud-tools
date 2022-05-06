@@ -9,18 +9,23 @@ import inspect
 
 chain = lambda l: list(itertools.chain(*l))
 
-def _escape(k, v):
+def _escape(k, v=None):
+    if v is None:
+        # Convert to yaml value
+        v = 'null'
     if isinstance(v, tuple):
         v = list(v)
     if isinstance(v, list):
-        return f"'{k}={v}'"
-    else:
-        return f"{k}={v}"
+        v = '[' + ','.join(map(str, v)) + ']'
+        v = f"'{v}'"
+    return f"{k}={v}"
 
-def flag(k, vs):
+def flag(k, vs=None):
     """
     flag('seed', [0,1,2]) returns [['seed=0'], ['seed=1'], ['seed=2']]
     """
+    if vs is None:
+        return [[f"'{k}'"]]
     return [[_escape(k, v)] for v in vs]
 
 def pref(prefix, L):
