@@ -166,8 +166,12 @@ def switch_gcp_context(project, zone, cluster):
         zone (str): The GCP zone to use.
         cluster (str): The GCP cluster to use.
     """
-    subprocess.call(f'gcloud config set project {project}', shell=True)
-    subprocess.call(f'gcloud container clusters get-credentials {cluster} --zone {zone}', shell=True)
+    try:
+        subprocess.call(f'kubectl config use-context {cluster}', shell=True)
+    except:
+        subprocess.call(f'gcloud config set project {project}', shell=True)
+        subprocess.call(f'gcloud container clusters get-credentials {cluster} --zone {zone}', shell=True)
+        subprocess.call(f'gcloud config rename-context gke_{project}_{zone}_{cluster} {cluster}', shell=True)
 
 
 def run(args):
@@ -178,7 +182,7 @@ def run(args):
 
     # Check if the pool is supported
     if args.pool not in DEFAULT.NODE_POOLS:
-        raise ValueError(f"Pool {args.pool} not supported")
+        raise ValueError(f"Pool {args.pool} not supported. Supported pools are {DEFAULT.NODE_POOLS} with preemptible pools {DEFAULT.PREEMPTIBLE_POOLS}.")
 
     # Preemptible
     preemptible = args.pool in DEFAULT.PREEMPTIBLE_POOLS

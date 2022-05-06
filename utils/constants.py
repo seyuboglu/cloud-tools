@@ -157,7 +157,7 @@ class HippoGCPHippoEurope(Options):
         return cmd
 
 @dataclass
-class HippoGCPHippoCentral(HippoGCPHippo):
+class HippoGCPHippoCentral(HippoGCPHippoEurope):
     NODE_POOLS = ['a100-1-p', 't4-1-p']
     PREEMPTIBLE_POOLS = ['a100-1-p', 't4-1-p']
     CONDA_ENVS = {'a100-1-p': 's4-a100'}
@@ -213,7 +213,12 @@ DEFAULTS = {
     'hippo-gcp-hippo-europe': HippoGCPHippoEurope(),
     'hippo-gcp-hippo-europe-2': HippoGCPHippoEurope2(),
     'hippo-gcp-hippo-central': HippoGCPHippoCentral(),
-    'hippo-gcp-fg': HippoGCPFineGrained(),    
+    'hippo-gcp-fg': HippoGCPFineGrained(),
+
+    'platypus-1': HippoGCPHippo(),
+    'platypus-2': HippoGCPHippoEurope(),
+    'platypus-3': HippoGCPHippoCentral(),
+    'platypus-4': HippoGCPHippoEurope2(),
 }
 
 # gcloud container clusters get-credentials platypus-2 --zone europe-west4-a
