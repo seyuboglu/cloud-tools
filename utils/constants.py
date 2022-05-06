@@ -31,7 +31,7 @@ class Options:
     GCP_CLUSTER = 'platypus-1'
     # Path to wandb authentication file
     WANDB_PATH = None
-    
+
 
     @staticmethod
     def main_command(run_name, args, dryrun=False):
@@ -221,6 +221,7 @@ DEFAULTS = {
     'platypus-4': HippoGCPHippoEurope2(),
 }
 
+# gcloud container clusters get-credentials platypus-1 --zone us-west1-a
 # gcloud container clusters get-credentials platypus-2 --zone europe-west4-a
 # gcloud container clusters get-credentials platypus-3 --zone us-central1-a
 # gcloud container clusters get-credentials platypus-4 --zone europe-west4-a
