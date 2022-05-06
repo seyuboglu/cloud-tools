@@ -311,7 +311,8 @@ if __name__ == '__main__':
         DEFAULT.DEFAULT_IMAGE = args.image
 
     if args.interactive:
-        args.cmd = 'sleep infinity'
+        # args.cmd = 'sleep infinity'
+        args.cmd = f'echo -e "source /home/.bashrc\neval `ssh-agent -s`\nssh-add /home/.ssh/id_rsa\ncd /home/workspace" >> /root/.bashrc && sleep infinity'
         args.config = None
         args.sweep = None
 
