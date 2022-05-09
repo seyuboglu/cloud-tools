@@ -71,7 +71,7 @@ def pool_dependent_conda_env(pool, conda_env):
     Returns:
         str: The conda environment to use for the given node pool.
     """
-    if pool in DEFAULT.CONDA_ENVS:
+    if pool in DEFAULT.CONDA_ENVS and conda_env == DEFAULT.DEFAULT_CONDA_ENV:
         return DEFAULT.CONDA_ENVS[pool]
     return conda_env
 
@@ -173,8 +173,8 @@ def switch_gcp_context(project, zone, cluster):
         subprocess.call(f'gcloud container clusters get-credentials {cluster} --zone {zone}', shell=True)
         print("Renaming context to {cluster} from gke_{project}_{zone}_{cluster}")
         subprocess.call(f'kubectl config rename-context gke_{project}_{zone}_{cluster} {cluster}', shell=True)
-        
-    print("Switched to {cluster}")
+
+    print(f"Switched to {cluster}")
 
 
 def run(args):
@@ -212,6 +212,7 @@ def run(args):
             subprocess.run(['rm', f])
         else:
             print(f"Command: {args.cmd}")
+        print("Nothing launched yet, use -al to launch!")
     else:
         # Run using Kubernetes
         print(f"Launching pods...\nPool: {args.pool}\nImage: {DEFAULT.DEFAULT_IMAGE}")
@@ -222,7 +223,7 @@ def run(args):
                 DEFAULT.DEFAULT_IMAGE, 
                 cmd, 
                 DEFAULT.DEFAULT_STARTUP_DIR, 
-                DEFAULT.DEFAULT_CONDA_ENV,
+                DEFAULT.CONDA_ENV,
                 as_job=preemptible,
             )
 
@@ -307,7 +308,9 @@ if __name__ == '__main__':
 
     # Change conda env if specified
     if args.conda:
-        DEFAULT.DEFAULT_CONDA_ENV = args.conda
+        DEFAULT.CONDA_ENV = args.conda
+    else:
+        DEFAULT.CONDA_ENV = DEFAULT.DEFAULT_CONDA_ENV
 
     # Change image if specified
     if args.image:
