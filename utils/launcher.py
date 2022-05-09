@@ -205,6 +205,7 @@ def run(args):
 
     print("Timestamp:", timestamp)
     print("Run name:", run_name)
+    sweep_name = run_name
 
     if not args.autolaunch:
         if f is not None:
@@ -229,6 +230,8 @@ def run(args):
 
         if f is not None:
             subprocess.run(['chmod', '777', f])
+
+    print("Sweep group name:", sweep_name)
 
 
 if __name__ == '__main__':
