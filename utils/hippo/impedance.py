@@ -73,3 +73,87 @@ def s3_impedance_sweep_3():
     ])
 
     return sweep
+
+
+def s4_impedance_global_1():
+
+    sweep = prod([
+        flag("train.seed", [0]),
+        flag("experiment", ['s4-impedance']),
+        flag("model.dropout", [0.3, 0.4, 0.5]),
+        flag("optimizer.weight_decay", [0.05, 0.1, 0.20]),
+        flag("model.n_layers", [4]),
+        flag("model.layer.bidirectional", [True]),
+        flag("model.layer.postact", ['glu']),
+        lzip([
+            flag("optimizer.lr", [0.01, 0.001]),
+            flag("+model.layer.lr_dt", [0.01, 0.001]),
+        ]),
+        
+    ])
+
+    return sweep
+
+def s4_impedance_global_2():
+
+    sweep = prod([
+        flag("train.seed", [0]),
+        flag("experiment", ['s4-impedance']),
+        flag("model.dropout", [0.2]),
+        flag("optimizer.weight_decay", [0.05, 0.1, 0.20]),
+        flag("model.n_layers", [4, 6]),
+        flag("model.layer.bidirectional", [True]),
+        flag("model.layer.postact", ['glu']),
+        lzip([
+            flag("optimizer.lr", [0.01]),
+            flag("+model.layer.lr_dt", [0.01]),
+        ]),
+        
+    ])
+
+    return sweep
+
+def s4_impedance_global_3():
+
+    sweep = prod([
+        flag("train.seed", [0]),
+        flag("experiment", ['s4-impedance']),
+        flag("model.dropout", [0.3]),
+        flag("optimizer.weight_decay", [0.05, 0.1, 0.20]),
+        flag("model.n_layers", [4, 6]),
+        flag("model.layer.bidirectional", [True]),
+        flag("model.layer.postact", ['glu']),
+        flag("optimizer.lr", [0.01]),
+        flag("+model.layer.lr_dt", [0.01]),
+        lzip([
+            flag("model.layer.measure", ['fourier', 'fourier_diag', 'hippo', 'random']),
+            flag("+model.layer.rank_weight", [1, 1, 1, 0]),    
+        ]),
+        
+    ])
+
+    return sweep
+
+def s4_impedance_final_1():
+
+    sweep = prod([
+        flag("train.seed", [1, 2, 3, 4, 5]),
+        flag("experiment", ['s4-impedance']),
+        flag("model.dropout", [0.3]),
+        flag("optimizer.weight_decay", [0.20]),
+        flag("model.n_layers", [4, 6]),
+        flag("model.layer.bidirectional", [True]),
+        flag("model.layer.postact", ['glu']),
+        flag("optimizer.lr", [0.01]),
+        flag("+model.layer.lr_dt", [0.01]),
+        lzip([
+            flag("model.layer.measure", ['fourier', 'random']),
+            flag("+model.layer.rank_weight", [1, 0]),    
+        ]),
+        
+    ])
+
+    return sweep
+
+
+# python -m checkpoints.visualize_2 wandb=null experiment=s4-impedance model.dropout=0.3 model.n_layers=4 model.layer.bidirectional=True model.layer.postact=glu train.checkpoint_path=/home/workspace/hippo/outputs/2022-05-07/04-55-32-287949/checkpoints/val/AUROC.ckpt  train.visualizer=impedance loader.drop_last=false
