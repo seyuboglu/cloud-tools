@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: {{ pod_name }} # name the pod what you like
+    labels:
+        app: app
+spec:
+    containers:
+      - command: ["/bin/bash","-c"]
+        args: 
+            - sh /home/sabri/.startup.sh &&
+              {{ command }}
+
+        image: gcr.io/hai-gcp-fine-grained/default-small # replace this with whatever image you want
+        name: {{ pod_name }}
+        resources:
+            limits:
+                nvidia.com/gpu: {{ gpus }}
+            requests:
+                nvidia.com/gpu: {{ gpus }}
+        volumeMounts:
+            {% for volume in volumes %}
+            - name: {{ volume.pv_name }}
+              mountPath: {{ volume.mount_path }}
+            {% endfor %}
+            - name: dshm
+              mountPath: /dev/shm
+        ports:
+            - name: jupyter
+              containerPort: 8000
+            - name: streamlit
+              containerPort: 8001
+    volumes:
+        {% for volume in volumes %}
+        - name: {{ volume.pv_name }}
+          persistentVolumeClaim:
+            claimName: {{ volume.pvc_name }}
+        {% endfor %}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+    restartPolicy: Never
+    nodeSelector:
+        # Make sure that your cluster actually has the accelerator you're requesting!
+        cloud.google.com/gke-nodepool: {{ node_pool }} 
+        {% if gpus > 0 %}
+        cloud.google.com/gke-accelerator: nvidia-tesla-t4
+        {% endif %}
+    serviceAccountName: default

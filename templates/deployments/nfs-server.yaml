@@ -1,0 +1,36 @@
+apiVersion: apps/v1  #https://stackoverflow.com/questions/58481850/no-matches-for-kind-deployment-in-version-extensions-v1beta1
+kind: Deployment
+metadata:
+  name: {{ server_name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: {{ server_name }}  # tells the deployment to match to the pods created below 
+  template:
+    metadata:
+      labels:
+        role: {{ server_name }}
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: {{ node_pool }} # Make sure this is the name of the non-GPU pool in your cluster!
+      containers:
+      - name: nfs-server
+        image: gcr.io/google_containers/volume-nfs:0.8
+        ports:
+          - name: nfs
+            containerPort: 2049
+          - name: mountd
+            containerPort: 20048
+          - name: rpcbind
+            containerPort: 111
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /exports
+            name: {{ pd_name }} # This is the name of the persistent disk you created in GCloud.
+      volumes:
+        - name: {{ pd_name }} # This is the name of the persistent disk you created in GCloud.
+          gcePersistentDisk:
+            pdName: {{ pd_name }} # This is the name of the persistent disk you created in GCloud.
+            fsType: ext4

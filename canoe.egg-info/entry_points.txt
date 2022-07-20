@@ -1,0 +1,2 @@
+[console_scripts]
+canoe = canoe.cli:cli
