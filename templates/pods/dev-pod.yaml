@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: Pod
 metadata:
-    name: {{ pod_name }} # name the pod what you like
+    name: {{ user }}-{{ pod_name }} # name the pod what you like
     labels:
         app: app
 spec:
     containers:
       - command: ["/bin/bash","-c"]
         args: 
-            - sh /home/sabri/.startup.sh &&
+            - sh /home/{{ user }}/.startup.sh &&
               {{ command }}
 
         image: gcr.io/hai-gcp-fine-grained/default-small # replace this with whatever image you want

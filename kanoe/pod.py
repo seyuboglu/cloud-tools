@@ -23,12 +23,14 @@ class PodBuilder:
         name: str,
         volumes: List[str],
         node_pool: str = "dev",
+        user: str = "sabri",
         gpus: int = 0,
         command: str = "sleep infinity",
         templates_dir: str = None,
         build_dir: str = None,
     ):
         self.name = name
+        self.user = user 
         self.node_pool = node_pool
         self.volumes = [Volume(name=volume) for volume in volumes]
         self.gpus = gpus
@@ -71,6 +73,7 @@ class PodBuilder:
             node_pool=self.node_pool,
             gpus=self.gpus,
             command=self.command,
+            user=self.user
         )
         subprocess.run(["kubectl", "apply", "-f", path])
 
@@ -87,17 +90,19 @@ import click
 @click.option(
     "--volumes", "-v", default=["home", "data"], type=click.STRING, multiple=True
 )
+@click.option("--user", "-u", default="sabri", type=click.STRING)
 @click.option("--node-pool", "-n", default="dev", type=click.STRING)
 @click.option("--gpus", "-g", default=0, type=click.INT)
 @click.option("--command", "-c", default="sleep infinity", type=click.STRING)
 @click.pass_context
-def pod(ctx, name: str, volumes: List[str], node_pool: str, gpus: int, command: str):
+def pod(ctx, name: str, volumes: List[str], user: str, node_pool: str, gpus: int, command: str):
     """
     Create a new pod
     """
     builder = PodBuilder(
         name=name,
         volumes=volumes,
+        user=user, 
         node_pool=node_pool,
         gpus=gpus,
         command=command,
