@@ -1,0 +1,95 @@
+# This file can update the JupyterHub Helm chart's default configuration values.
+#
+# For reference see the configuration reference and default values, but make
+# sure to refer to the Helm chart version of interest to you!
+#
+# Introduction to YAML:     https://www.youtube.com/watch?v=cdLNKUoMc6c
+# Chart config reference:   https://zero-to-jupyterhub.readthedocs.io/en/stable/resources/reference.html
+# Chart default values:     https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/HEAD/jupyterhub/values.yaml
+# Available chart versions: https://jupyterhub.github.io/helm-chart/
+
+
+hub:
+  # extraConfig:
+  #   myConfig.py: |
+  #     c.Spawner.notebook_dir = '/home/'
+  config:
+    Authenticator:
+      admin_users:
+        - krandiash
+    DummyAuthenticator:
+      password: cheesebagel
+
+scheduling:
+  userScheduler: # pack users tight on some nodes and let other nodes become empty and scaled down
+    enabled: true
+  podPriority:
+    enabled: true
+  userPlaceholder: # This can be used to create placeholder users so real users don't have to wait when they arrive
+    enabled: false
+    # replicas: 4 # disabled so we don't waste money (but enable if moving to use with many users)
+  userPods:
+    nodeAffinity:
+      matchNodePurpose: require
+
+cull:
+  enabled: true
+  timeout: 3600
+  every: 300
+
+# The resources requested is very important to consider in
+# relation to your machine type. If you have a n1-highmem-4 node
+# on Google Cloud for example you get 4 cores and 26 GB of
+# memory. With the configuration below you would  be able to have
+# at most about 50 users per node. This can be reasonable, but it
+# may not be, it will depend on your users. Are they mostly
+# writing and reading or are they mostly executing code?
+singleuser:
+  # cpu:  
+  #   limit: 4
+  #   guarantee: 0.05
+  # memory:
+  #   limit: 4G
+  #   guarantee: 512M
+
+  nodeSelector:
+    cloud.google.com/gke-nodepool: jupyterhub-t4-1
+
+  extraTolerations: # make sure we grab  GPU
+    - key: "nvidia.com/gpu"
+      operator: "Equal"
+      value: "present"
+      effect: "NoSchedule"
+
+  storage:
+    extraVolumes:
+      - name: pv-1
+        persistentVolumeClaim:
+          claimName: pvc-1
+      - name: dshm
+        emptyDir:
+          medium: Memory
+    extraVolumeMounts:
+      - name: pv-1
+        mountPath: /home/
+      - name: dshm
+        mountPath: /dev/shm
+
+    homeMountPath: /mnt/
+  
+  defaultUrl: /lab
+  # image:
+  #   name: jupyter/datascience-notebook
+  #   tag: 2343e33dec46
+  image: 
+    name: gcr.io/hai-gcp-hippo/cu1131-jupyterhub
+    tag: latest
+
+  profileList:
+    - display_name: "S4 Hippo Environment"
+      description: "Torch and a bunch of other things."
+      default: true
+    - display_name: "Jupyter Datascience Environment"
+      description: "Python, R, and Julia."
+      kubespawner_override:
+        image: jupyter/datascience-notebook:2343e33dec46

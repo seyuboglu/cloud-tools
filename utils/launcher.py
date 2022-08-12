@@ -87,7 +87,7 @@ def commands(pool, cmd, startup_dir, conda_env):
     Returns:
         list: The commands to be run on the cluster.
     """
-    # Optionally, use pool information to set the conda env 
+    # Optionally, use pool information to set the conda env
     # (e.g. if need to use different setups for different GPUs)
     conda_env = pool_dependent_conda_env(pool, conda_env)
     return [
@@ -146,7 +146,7 @@ def launch_pod(run_name, pool, image, cmd, startup_dir, conda_env, as_job=False)
 
     # Store it
     yaml.dump(config, open('temp.yaml', 'w'))
-    
+
     # Log
     print(f"Run name: {run_name}")
 
@@ -190,12 +190,13 @@ def run(args):
     # Preemptible
     preemptible = args.pool in DEFAULT.PREEMPTIBLE_POOLS
 
-    
+
     if args.config and args.sweep:
         # For config and sweep, load the config Python file and the sweep function
         config = importlib.import_module(args.config)
         sweep_fn = getattr(config, args.sweep)
-        run_name = f'{timestamp}--{args.config}--{args.sweep}'
+        config_name = args.config.split('.')[-1]
+        run_name = f'{timestamp}--{config_name}--{args.sweep}'
         # Generate the commands
         f, cmds = cmdruns(timestamp, run_name, sweep_fn, args.envvars, args.dryrun)
     else:
@@ -220,10 +221,10 @@ def run(args):
         for run_name, cmd in cmds.items():
             launch_pod(
                 run_name.replace(".", "-").replace("_", "-")[:60].lower().rstrip("-"),
-                args.pool, 
-                DEFAULT.DEFAULT_IMAGE, 
-                cmd, 
-                DEFAULT.DEFAULT_STARTUP_DIR, 
+                args.pool,
+                DEFAULT.DEFAULT_IMAGE,
+                cmd,
+                DEFAULT.DEFAULT_STARTUP_DIR,
                 DEFAULT.CONDA_ENV,
                 as_job=preemptible,
             )
@@ -298,7 +299,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Inject defaults into program globals()
-    global DEFAULT 
+    global DEFAULT
     DEFAULT = DEFAULTS[args.project]
 
     # Make JOBLOG_DIR if it doesn't exist
