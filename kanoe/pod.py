@@ -14,7 +14,7 @@ class Volume:
         self.name = name
         self.pv_name = f"pv-{name}"
         self.pvc_name = f"pvc-{name}"
-        self.mount_path = f"/{name}"
+        self.mount_path = f"{name}"
 
 
 class PodBuilder:
@@ -25,6 +25,7 @@ class PodBuilder:
         node_pool: str = "dev",
         user: str = "sabri",
         gpus: int = 0,
+        gpu_type: str = "nvidia-tesla-t4",
         command: str = "sleep infinity",
         templates_dir: str = None,
         build_dir: str = None,
@@ -35,6 +36,7 @@ class PodBuilder:
         self.volumes = [Volume(name=volume) for volume in volumes]
         self.gpus = gpus
         self.command = command
+        self.gpu_type = gpu_type
 
         if templates_dir is None:
             dir = pathlib.Path(__file__).parent.resolve().parent.resolve()
@@ -68,12 +70,13 @@ class PodBuilder:
         """
         path = self._render(
             template_path="pods/dev-pod.yaml",
-            pod_name=f"pod-{self.name}",
+            job_name=f"pod-{self.name}",
             volumes=self.volumes,
             node_pool=self.node_pool,
             gpus=self.gpus,
             command=self.command,
-            user=self.user
+            user=self.user,
+            gpu_type=self.gpu_type,
         )
         subprocess.run(["kubectl", "apply", "-f", path])
 
@@ -93,18 +96,21 @@ import click
 @click.option("--user", "-u", default="sabri", type=click.STRING)
 @click.option("--node-pool", "-n", default="dev", type=click.STRING)
 @click.option("--gpus", "-g", default=0, type=click.INT)
+@click.option("--gpu-type", "-t", default="nvidia-tesla-t4", type=click.STRING)
 @click.option("--command", "-c", default="sleep infinity", type=click.STRING)
 @click.pass_context
-def pod(ctx, name: str, volumes: List[str], user: str, node_pool: str, gpus: int, command: str):
+def pod(ctx, name: str, volumes: List[str], user: str, node_pool: str, gpus: int, gpu_type: str, command: str):
     """
     Create a new pod
     """
+    print(command)
     builder = PodBuilder(
         name=name,
         volumes=volumes,
         user=user, 
         node_pool=node_pool,
         gpus=gpus,
+        gpu_type=gpu_type,
         command=command,
         build_dir=ctx.obj["build_dir"],
         templates_dir=ctx.obj["templates_dir"],

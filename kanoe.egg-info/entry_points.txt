@@ -1,3 +1,2 @@
 [console_scripts]
 kanoe = kanoe.cli:cli
-

@@ -12,6 +12,8 @@ class VolumeBuilder:
         name: str,
         zone: str = "us-west1-a",
         node_pool: str = "io-nfs-small",
+        pd_name: str = None,
+        create_pd: bool = False, 
         size: int = 10,  # in GB
         type: str = "pd-ssd",
         build_dir: str = None,
@@ -22,6 +24,12 @@ class VolumeBuilder:
         self.node_pool = node_pool
         self.size = size
         self.type = type
+        self.create_pd = create_pd
+
+        if pd_name is None:
+            self.pd_name = f"pd-{self.name}"
+        else:
+            self.pd_name = pd_name
 
         if templates_dir is None:
             dir = pathlib.Path(__file__).parent.resolve().parent.resolve()
@@ -55,7 +63,7 @@ class VolumeBuilder:
         """
         path = self._render(
             template_path="deployments/nfs-server.yaml",
-            pd_name=f"pd-{self.name}",
+            pd_name=self.pd_name,
             server_name=f"nfs-server-{self.name}",
             node_pool=self.node_pool,
         )
@@ -102,12 +110,13 @@ class VolumeBuilder:
                 f"--type={self.type}",
                 f"--size={self.size}GB",
                 f"--zone={self.zone}",
-                f"pd-{self.name}",
+                f"{self.pd_name}",
             ]
         )
 
     def __call__(self):
-        self.create_persistent_disk()
+        if self.create_pd:
+            self.create_persistent_disk()
         self.create_nfs_server()
         self.create_nfs_service()
         self.create_nfs_pv()
@@ -129,12 +138,16 @@ import click
 @click.option("--node-pool", default="io-nfs-small")
 @click.option("--size", default=10, type=int)
 @click.option("--type", default="pd-ssd")
+@click.option("--pd-name", default=None, type=str)
+@click.option("--create-pd", default=False, is_flag=True)
 @click.pass_context
 def volume(
     ctx,
     name: str,
+    pd_name: str,
     zone: str,
     node_pool: str,
+    create_pd: bool,
     size: int,
     type: str,
 ):
@@ -142,6 +155,8 @@ def volume(
         name=name,
         zone=zone,
         node_pool=node_pool,
+        pd_name=pd_name,
+        create_pd=create_pd,
         size=size,
         type=type,
         build_dir=ctx.obj["build_dir"],

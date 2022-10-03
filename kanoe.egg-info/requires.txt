@@ -3,18 +3,18 @@ kubernetes
 click
 
 [all]
-pytest-cov>=2.10.1
-sphinx-rtd-theme>=0.5.1
-docformatter>=1.4
-recommonmark>=0.7.1
-twine
-isort>=5.7.0
 flake8>=3.8.4
-black>=21.5b0
-parameterized
-pre-commit>=2.9.3
-nbsphinx>=0.8.0
 sphinx-autobuild
+nbsphinx>=0.8.0
+pytest-cov>=2.10.1
+parameterized
+recommonmark>=0.7.1
+black>=21.5b0
+sphinx-rtd-theme>=0.5.1
+isort>=5.7.0
+docformatter>=1.4
+twine
+pre-commit>=2.9.3
 
 [dev]
 black>=21.5b0

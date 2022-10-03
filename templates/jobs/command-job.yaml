@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ job_name }}
+spec:
+    template:
+        spec:
+          containers:
+            - command: ["/bin/bash","-c"]
+              args: 
+                  - sh /home/{{ user }}/.startup.sh &&
+                    {{ command }}
+              name: {{ job_name }}
+
+              image: gcr.io/hai-gcp-fine-grained/default-small # replace this with whatever image you want
+              resources:
+                  limits:
+                      nvidia.com/gpu: {{ gpus }}
+                  requests:
+                      nvidia.com/gpu: {{ gpus }}
+              volumeMounts:
+                  {% for volume in volumes %}
+                  - name: {{ volume.pv_name }}
+                    mountPath: {{ volume.mount_path }}
+                  {% endfor %}
+                  - name: dshm
+                    mountPath: /dev/shm
+              ports:
+                  - name: jupyter
+                    containerPort: 8000
+                  - name: streamlit
+                    containerPort: 8001
+          volumes:
+              {% for volume in volumes %}
+              - name: {{ volume.pv_name }}
+                persistentVolumeClaim:
+                  claimName: {{ volume.pvc_name }}
+              {% endfor %}
+              - name: dshm
+                emptyDir:
+                  medium: Memory
+          restartPolicy: Never
+          nodeSelector:
+              # Make sure that your cluster actually has the accelerator you're requesting!
+              cloud.google.com/gke-nodepool: {{ node_pool }} 
+              {% if gpus > 0 %}
+              cloud.google.com/gke-accelerator: {{ gpu_type }}
+              {% endif %}
+          serviceAccountName: default

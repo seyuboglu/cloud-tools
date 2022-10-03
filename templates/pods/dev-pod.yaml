@@ -44,6 +44,6 @@ spec:
         # Make sure that your cluster actually has the accelerator you're requesting!
         cloud.google.com/gke-nodepool: {{ node_pool }} 
         {% if gpus > 0 %}
-        cloud.google.com/gke-accelerator: nvidia-tesla-t4
+        cloud.google.com/gke-accelerator: {{ gpu_type }}
         {% endif %}
     serviceAccountName: default
